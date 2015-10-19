@@ -17,5 +17,5 @@ Copy the script to `~/.weechat/python/autoload`
 
 ```
 mkdir -p ~/.weechat/python/autoload
-wget https://raw.githubusercontent.com/keith/edit-weechat/master/edit ~/.weechat/python/autoload
+wget https://raw.githubusercontent.com/keith/edit-weechat/master/edit.py ~/.weechat/python/autoload
 ```
