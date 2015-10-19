@@ -21,6 +21,7 @@ def edit(data, buf, args):
     cmd = [editor, path]
     code = subprocess.Popen(cmd).wait()
     if code != 0:
+        os.remove(path)
         weechat.command(buf, "/window refresh")
         return weechat.WEECHAT_RC_ERROR
 
@@ -29,6 +30,7 @@ def edit(data, buf, args):
         weechat.buffer_set(buf, "input", text)
         weechat.buffer_set(buf, "input_pos", str(len(text)))
 
+    os.remove(path)
     weechat.command(buf, "/window refresh")
 
     return weechat.WEECHAT_RC_OK
