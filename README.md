@@ -11,6 +11,15 @@ compose messages in your `$EDITOR`.
 # Save and quit
 ```
 
+# Configuration
+
+If you'd like to customize the editor you use outside of the `$EDITOR`
+environment variable, you can set it in weechat.
+
+```sh
+/set plugins.var.python.edit.editor "vim -f"
+```
+
 # Installation
 
 Copy the script to `~/.weechat/python/autoload`

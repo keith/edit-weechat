@@ -3,8 +3,12 @@
 # Usage:
 # /edit
 #
+# Optional settings:
+# /set plugins.var.python.edit.editor "vim -f"
+#
 # History:
 # 10-18-2015
+# Version 1.0.1: Add configurable editor key
 # Version 1.0.0: initial release
 
 import os
@@ -14,11 +18,12 @@ import weechat
 
 
 def edit(data, buf, args):
-    editor = os.environ.get("EDITOR", "vim")
+    editor = (weechat.config_get_plugin("editor") or
+              os.environ.get("EDITOR", "vim -f"))
     path = os.path.expanduser("~/.weechat/message.txt")
     open(path, "w+")
 
-    cmd = [editor, path]
+    cmd = editor.split() + [path]
     code = subprocess.Popen(cmd).wait()
     if code != 0:
         os.remove(path)
