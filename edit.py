@@ -21,7 +21,8 @@ def edit(data, buf, args):
     editor = (weechat.config_get_plugin("editor") or
               os.environ.get("EDITOR", "vim -f"))
     path = os.path.expanduser("~/.weechat/message.txt")
-    open(path, "w+")
+    with open(path, "w+") as f:
+        f.write(weechat.buffer_get_string(buf, "input"))
 
     cmd = editor.split() + [path]
     code = subprocess.Popen(cmd).wait()
