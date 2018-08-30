@@ -13,6 +13,7 @@
 
 import os
 import os.path
+import shlex
 import subprocess
 import weechat
 
@@ -24,7 +25,7 @@ def edit(data, buf, args):
     with open(path, "w+") as f:
         f.write(weechat.buffer_get_string(buf, "input"))
 
-    cmd = editor.split() + [path]
+    cmd = shlex.split(editor) + [path]
     code = subprocess.Popen(cmd).wait()
     if code != 0:
         os.remove(path)
