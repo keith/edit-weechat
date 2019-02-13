@@ -18,10 +18,15 @@ import subprocess
 import weechat
 
 
+def weechat_config_dir():
+    return os.path.expanduser(os.environ.get("WEECHAT_HOME", "~/.weechat/"))
+
+
 def edit(data, buf, args):
     editor = (weechat.config_get_plugin("editor") or
               os.environ.get("EDITOR", "vim -f"))
-    path = os.path.expanduser("~/.weechat/message.txt")
+    config_dir = weechat_config_dir()
+    path = os.path.join(config_dir, "message.txt")
     with open(path, "w+") as f:
         f.write(weechat.buffer_get_string(buf, "input"))
 
