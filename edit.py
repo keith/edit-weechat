@@ -5,9 +5,12 @@
 #
 # Optional settings:
 # /set plugins.var.python.edit.editor "vim -f"
+# /set plugins.var.python.edit.terminal "xterm"
+# /set plugins.var.python.edit.run_externally "false"
 #
 # History:
 # 10-18-2015
+# Version 1.0.2: Add the ability to run the editor in a external terminal
 # Version 1.0.1: Add configurable editor key
 # Version 1.0.0: initial release
 
