@@ -1,15 +1,28 @@
 # edit-weechat
 
 This simple [weechat](https://weechat.org/) plugin allows you to
-compose messages in your `$EDITOR`.
+compose messages in your `$EDITOR`, optionally with a file type.
 
 # Usage
 
-```sh
-/edit
-# Type some stuff
-# Save and quit
-```
+- Markdown message (it's the default, same as `/edit md`)
+  ```sh
+  /edit
+  # Type some stuff
+  # Save and quit
+  ```
+- Plain text message
+  ```sh
+  /edit txt
+  # Type some stuff
+  # Save and quit
+  ```
+- Code message with fences added automatically
+  ```sh
+  /fenced cpp
+  # Type some code
+  # Save and quit
+  ```
 
 # Configuration
 
