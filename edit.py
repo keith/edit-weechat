@@ -1,7 +1,8 @@
 # Open your $EDITOR to compose a message in weechat
 #
 # Usage:
-# /edit
+# /edit [extension]
+# /fenced [extension]
 #
 # Optional settings:
 # /set plugins.var.python.edit.editor "vim -f"
@@ -21,18 +22,19 @@ import subprocess
 import weechat
 
 
+FILE = ""
+FENCED = False
+
+
 def weechat_config_dir():
     return os.path.expanduser(os.environ.get("WEECHAT_HOME", "~/.weechat/"))
-
-
-PATH = os.path.join(weechat_config_dir(), "message.txt")
 
 
 def editor_process_cb(data, command, return_code, out, err):
     buf = data
 
     if return_code != 0:
-        cleanup(PATH, buf)
+        cleanup(buf)
         weechat.prnt("", "{}: {}".format(
             err.strip(),
             return_code
@@ -40,26 +42,27 @@ def editor_process_cb(data, command, return_code, out, err):
         return weechat.WEECHAT_RC_ERROR
 
     if return_code == 0:
-        read_file(PATH, buf)
-        cleanup(PATH, buf)
+        read_file(buf)
+        cleanup(buf)
 
     return weechat.WEECHAT_RC_OK
 
 
-def cleanup(path, buf):
+def cleanup(buf):
     try:
-        os.remove(path)
+        os.remove(FILE)
     except (OSError, IOError):
         pass
 
     weechat.command(buf, "/window refresh")
 
 
-def read_file(path, buf):
+def read_file(buf):
     try:
-        with open(PATH) as f:
+        with open(FILE) as f:
             text = f.read()
-
+            if FENCED:
+                text = "```\n" + text.strip() + "\n```"
         weechat.buffer_set(buf, "input", text)
         weechat.buffer_set(buf, "input_pos", str(len(text)))
 
@@ -69,26 +72,26 @@ def read_file(path, buf):
     weechat.command(buf, "/window refresh")
 
 
-def hook_editor_process(terminal, editor, path, buf):
+def hook_editor_process(terminal, editor, buf):
     term_cmd = "{} -e".format(terminal)
-    editor_cmd = "{} {}".format(editor, path)
+    editor_cmd = "{} {}".format(editor, FILE)
     weechat.hook_process("{} \"{}\"".format(
         term_cmd,
         editor_cmd
     ), 0, "editor_process_cb", buf)
 
 
-def run_blocking(editor, path, buf):
-    cmd = shlex.split(editor) + [path]
+def run_blocking(editor, buf):
+    cmd = shlex.split(editor) + [FILE]
     code = subprocess.Popen(cmd).wait()
 
     if code != 0:
-        cleanup(path,  buf)
+        cleanup(buf)
 
-    read_file(path, buf)
+    read_file(buf)
 
 
-def edit(data, buf, args):
+def edit(data, buf, args, fenced=False):
     editor = (weechat.config_get_plugin("editor")
               or os.environ.get("EDITOR", "vim -f"))
 
@@ -102,15 +105,25 @@ def edit(data, buf, args):
     )
     run_externally = bool(run_externally)
 
-    with open(PATH, "w+") as f:
+    global FILE, FENCED
+
+    FILE = os.path.join(weechat_config_dir(), "message." + ("md" if not args else args))
+
+    FENCED = fenced
+
+    with open(FILE, "w+") as f:
         f.write(weechat.buffer_get_string(buf, "input"))
 
     if run_externally:
-        hook_editor_process(terminal, editor, PATH, buf)
+        hook_editor_process(terminal, editor, buf)
     else:
-        run_blocking(editor, PATH, buf)
+        run_blocking(editor, buf)
 
     return weechat.WEECHAT_RC_OK
+
+
+def fenced(data, buf, args):
+    return edit(data, buf, args, fenced=True)
 
 
 def main():
@@ -118,8 +131,15 @@ def main():
                             "Open your $EDITOR to compose a message", "", ""):
         return weechat.WEECHAT_RC_ERROR
 
-    weechat.hook_command("edit", "Open your $EDITOR to compose a message", "",
-                         "", "", "edit", "")
+    weechat.hook_command("edit", "Open your $EDITOR to compose a message",
+                         "[extension]",
+                         "extension: extension for temporary composing file",
+                         "extension", "edit", "")
+    weechat.hook_command("fenced", "Open your $EDITOR to compose a message"
+                                   " with automatic code fences",
+                         "[extension]",
+                         "extension: extension for temporary composing file",
+                         "extension", "fenced", "")
 
 
 if __name__ == "__main__":
