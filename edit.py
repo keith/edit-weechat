@@ -60,6 +60,9 @@ def read_file(path, buf):
         with open(PATH) as f:
             text = f.read()
 
+        if text[-1] == "\n":
+            text = text[:-1]  # remove trailing newline if exists.
+
         weechat.buffer_set(buf, "input", text)
         weechat.buffer_set(buf, "input_pos", str(len(text)))
 
