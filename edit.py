@@ -5,14 +5,22 @@
 #
 # Optional settings:
 # /set plugins.var.python.edit.editor "vim -f"
-# /set plugins.var.python.edit.terminal "xterm"
 # /set plugins.var.python.edit.run_externally "false"
 #
+# If run_externally, the editor is spawned without blocking weechat. The
+# process should not output to the terminal (use GUI program or spawn a new
+# terminal). Otherwise the editor is executed in the current terminal (blocking
+# weechat, which can break stuff).
+#
 # History:
+# 2022-09-09
+# Version 1.0.3: Drop terminal option and leave that up to the user
 # 10-18-2015
 # Version 1.0.2: Add the ability to run the editor in a external terminal
 # Version 1.0.1: Add configurable editor key
 # Version 1.0.0: initial release
+
+VERSION = "1.0.3"
 
 import os
 import os.path
@@ -73,13 +81,10 @@ def read_file(path, buf):
     weechat.command(buf, "/window refresh")
 
 
-def hook_editor_process(terminal, editor, path, buf):
-    term_cmd = "{} -e".format(terminal)
+def hook_editor_process(editor, path, buf):
     editor_cmd = "{} {}".format(editor, path)
-    weechat.hook_process("{} \"{}\"".format(
-        term_cmd,
-        editor_cmd
-    ), 0, "editor_process_cb", buf)
+    weechat.hook_process(
+        shlex.join(shlex.split(editor) + [path]), 0, "editor_process_cb", buf)
 
 
 def run_blocking(editor, path, buf):
@@ -96,11 +101,6 @@ def edit(data, buf, args):
     editor = (weechat.config_get_plugin("editor")
               or os.environ.get("EDITOR", "vim -f"))
 
-    terminal = (weechat.config_get_plugin("terminal")
-                or os.getenv("TERMCMD"))
-
-    terminal = terminal or "xterm"
-
     run_externally = weechat.config_string_to_boolean(
         weechat.config_get_plugin("run_externally")
     )
@@ -110,7 +110,7 @@ def edit(data, buf, args):
         f.write(weechat.buffer_get_string(buf, "input"))
 
     if run_externally:
-        hook_editor_process(terminal, editor, PATH, buf)
+        hook_editor_process(editor, PATH, buf)
     else:
         run_blocking(editor, PATH, buf)
 
@@ -118,7 +118,7 @@ def edit(data, buf, args):
 
 
 def main():
-    if not weechat.register("edit", "Keith Smiley", "1.0.0", "MIT",
+    if not weechat.register("edit", "Keith Smiley", VERSION, "MIT",
                             "Open your $EDITOR to compose a message", "", ""):
         return weechat.WEECHAT_RC_ERROR
 
