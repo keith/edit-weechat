@@ -14,18 +14,21 @@
 #
 # History:
 # 2022-09-09
+# Version 1.0.4: Use temporary files for the message
 # Version 1.0.3: Drop terminal option and leave that up to the user
 # 10-18-2015
 # Version 1.0.2: Add the ability to run the editor in a external terminal
 # Version 1.0.1: Add configurable editor key
 # Version 1.0.0: initial release
 
-VERSION = "1.0.3"
+VERSION = "1.0.4"
 
+import json
 import os
 import os.path
 import shlex
 import subprocess
+import tempfile
 import weechat
 
 
@@ -33,14 +36,11 @@ def weechat_config_dir():
     return os.path.expanduser(os.environ.get("WEECHAT_HOME", "~/.weechat/"))
 
 
-PATH = os.path.join(weechat_config_dir(), "message.txt")
-
-
 def editor_process_cb(data, command, return_code, out, err):
-    buf = data
+    buf, path = json.loads(data)
 
     if return_code != 0:
-        cleanup(PATH, buf)
+        cleanup(path, buf)
         weechat.prnt("", "{}: {}".format(
             err.strip(),
             return_code
@@ -48,8 +48,8 @@ def editor_process_cb(data, command, return_code, out, err):
         return weechat.WEECHAT_RC_ERROR
 
     if return_code == 0:
-        read_file(PATH, buf)
-        cleanup(PATH, buf)
+        read_file(path, buf)
+        cleanup(path, buf)
 
     return weechat.WEECHAT_RC_OK
 
@@ -65,7 +65,7 @@ def cleanup(path, buf):
 
 def read_file(path, buf):
     try:
-        with open(PATH) as f:
+        with open(path) as f:
             text = f.read()
 
         weechat.buffer_set(buf, "input", text)
@@ -79,8 +79,9 @@ def read_file(path, buf):
 
 def hook_editor_process(editor, path, buf):
     editor_cmd = "{} {}".format(editor, path)
+    data = json.dumps([buf, path])
     weechat.hook_process(
-        shlex.join(shlex.split(editor) + [path]), 0, "editor_process_cb", buf)
+        shlex.join(shlex.split(editor) + [path]), 0, "editor_process_cb", data)
 
 
 def run_blocking(editor, path, buf):
@@ -102,13 +103,16 @@ def edit(data, buf, args):
     )
     run_externally = bool(run_externally)
 
-    with open(PATH, "w+") as f:
+    f, path = tempfile.mkstemp(prefix = "weechat-edit-")
+    os.close(f)
+
+    with open(path, "w+") as f:
         f.write(weechat.buffer_get_string(buf, "input"))
 
     if run_externally:
-        hook_editor_process(editor, PATH, buf)
+        hook_editor_process(editor, path, buf)
     else:
-        run_blocking(editor, PATH, buf)
+        run_blocking(editor, path, buf)
 
     return weechat.WEECHAT_RC_OK
 
