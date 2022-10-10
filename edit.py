@@ -21,7 +21,7 @@ import subprocess
 import weechat
 
 def xdg_cache_dir():
-    return os.path.expanduser(os.environ.get("XDG_CACHE_HOME", "~/..cache/"))
+    return os.path.expanduser(os.environ.get("XDG_CACHE_HOME", "~/.cache/"))
 
 def weechat_cache_dir():
     cache_dir = os.path.join(xdg_cache_dir(), "weechat")
