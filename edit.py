@@ -20,12 +20,17 @@ import shlex
 import subprocess
 import weechat
 
+def xdg_cache_dir():
+    return os.path.expanduser(os.environ.get("XDG_CACHE_HOME", "~/.cache/"))
 
-def weechat_config_dir():
+def weechat_cache_dir():
+    cache_dir = os.path.join(xdg_cache_dir(), "weechat")
+    if os.path.exists(cache_dir):
+        return cache_dir
     return os.path.expanduser(os.environ.get("WEECHAT_HOME", "~/.weechat/"))
 
 
-PATH = os.path.join(weechat_config_dir(), "message.txt")
+PATH = os.path.join(weechat_cache_dir(), "message.txt")
 
 
 def editor_process_cb(data, command, return_code, out, err):
