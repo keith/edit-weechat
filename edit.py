@@ -58,11 +58,7 @@ def cleanup(path, buf):
 def read_file(path, buf):
     try:
         with open(PATH) as f:
-            text = f.read()
-
-        if text[-1] == "\n":
-            text = text[:-1]  # remove trailing newline if exists.
-
+            text = f.read().strip()
         weechat.buffer_set(buf, "input", text)
         weechat.buffer_set(buf, "input_pos", str(len(text)))
 
