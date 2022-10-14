@@ -63,8 +63,7 @@ def cleanup(path, buf):
 def read_file(path, buf):
     try:
         with open(PATH) as f:
-            text = f.read()
-
+            text = f.read().strip()
         weechat.buffer_set(buf, "input", text)
         weechat.buffer_set(buf, "input_pos", str(len(text)))
 
