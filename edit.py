@@ -112,7 +112,10 @@ def edit(data, buf, args):
     os.close(f)
 
     with open(path, "w+") as f:
-        f.write(weechat.buffer_get_string(buf, "input"))
+        # Fix for file opening empty: Prioritize arguments and
+        #     fall back to buffer input if no arguments were provided.
+        text_to_write = args if args else weechat.buffer_get_string(buf, "input")
+        f.write(text_to_write)
 
     if run_externally:
         hook_editor_process(editor, path, buf)
