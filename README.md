@@ -1,6 +1,6 @@
 # edit-weechat
 
-This simple [weechat](https://weechat.org/) plugin allows you to
+This simple [weechat](https://weechat.org/) script allows you 
 compose messages in your `$EDITOR`.
 
 # Usage
@@ -21,7 +21,7 @@ environment variable, you can set it in weechat.
 ```
 
 In case you want to run editor externally without blocking weechat (since
-blocking weechat can break things), you can configure the plugin like this:
+blocking weechat can break things), you can configure the script like this:
 
 ```
 /set plugins.var.python.edit.editor "gvim -f"
@@ -33,9 +33,15 @@ use terminal vim if you prefer.
 
 # Installation
 
-Copy the script to `~/.weechat/python/autoload`
+1. Copy the script to the plugin Python scripts directory located in "data" directory listed in Weechat command `/debug dirs`.
+And, since Weechat v3.2, XDG directories are prioritized, it may be: `"${HOME}/.local/share/weechat/python"`.
 
+```bash
+pythonScriptsDirpath="${HOME}/.local/share/weechat/python";
+
+mkdir -p -- "$pythonScriptsDirpath" &&
+wget 'https://raw.githubusercontent.com/keith/edit-weechat/master/edit.py' "${pythonScriptsDirpath}/edit.py";
 ```
-mkdir -p ~/.weechat/python/autoload
-wget https://raw.githubusercontent.com/keith/edit-weechat/master/edit.py ~/.weechat/python/autoload
-```
+
+2. Load the script in Weechat: `/script load edit.py`;
+3. Enable autoload in Weechat: `/script autoload edit.py`.
